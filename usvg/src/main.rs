@@ -25,7 +25,9 @@ OPTIONS:
   -V, --version                 Prints version information
   -c                            Prints the output SVG to the stdout
 
-  --dpi DPI                     Sets the resolution
+  --dpi_units DPI               Sets the unit conversion value for converting inches to pixels 
+                                [default: 96] [possible values: 10..4000]
+  --dpi_render DPI              Sets the render resolution 
                                 [default: 96] [possible values: 10..4000]
   --languages LANG              Sets a comma-separated list of languages that
                                 will be used during the 'systemLanguage'
@@ -92,8 +94,8 @@ struct Args {
     help: bool,
     version: bool,
     stdout: bool,
-
-    dpi: u32,
+    dpi_units: f64,
+    dpi_render: f64,
     languages: Vec<String>,
     shape_rendering: usvg::ShapeRendering,
     text_rendering: usvg::TextRendering,
@@ -127,7 +129,8 @@ fn collect_args() -> Result<Args, pico_args::Error> {
         version:            input.contains(["-V", "--version"]),
         stdout:             input.contains("-c"),
 
-        dpi:                input.opt_value_from_fn("--dpi", parse_dpi)?.unwrap_or(96),
+        dpi_units:          input.opt_value_from_fn("--dpi_units", parse_dpi)?.unwrap_or(96.),
+        dpi_render:         input.opt_value_from_fn("--dpi_render", parse_dpi)?.unwrap_or(96.),
         languages:          input.opt_value_from_fn("--languages", parse_languages)?
                                  .unwrap_or(vec!["en".to_string()]), // TODO: use system language
         shape_rendering:    input.opt_value_from_str("--shape-rendering")?.unwrap_or_default(),
@@ -158,10 +161,10 @@ fn collect_args() -> Result<Args, pico_args::Error> {
     })
 }
 
-fn parse_dpi(s: &str) -> Result<u32, String> {
-    let n: u32 = s.parse().map_err(|_| "invalid number")?;
+fn parse_dpi(s: &str) -> Result<f64, String> {
+    let n: f64 = s.parse().map_err(|_| "invalid number")?;
 
-    if n >= 10 && n <= 4000 {
+    if n >= 10. && n <= 4000. {
         Ok(n)
     } else {
         Err("DPI out of bounds".to_string())
@@ -320,7 +323,8 @@ fn process(args: Args) -> Result<(), String> {
             InputFrom::Stdin => None,
             InputFrom::File(ref f) => Some(f.into()),
         },
-        dpi: args.dpi as f64,
+        dpi_units: args.dpi_units as f64,
+        dpi_render: args.dpi_render as f64,
         font_family: take_or(args.font_family, "Times New Roman"),
         font_size: args.font_size as f64,
         languages: args.languages,

@@ -148,7 +148,8 @@ fn get_image_data_format(data: &[u8]) -> Option<ImageFormat> {
 pub fn load_sub_svg(data: &[u8], opt: &Options) -> Option<tree::ImageKind> {
     let sub_opt = Options {
         path: None,
-        dpi: opt.dpi,
+        dpi_units: opt.dpi_units,
+        dpi_render: opt.dpi_render,
         font_family: opt.font_family.clone(),
         font_size: opt.font_size,
         languages: opt.languages.clone(),

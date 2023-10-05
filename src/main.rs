@@ -410,7 +410,8 @@ fn parse_args() -> Result<Args, String> {
 
     let usvg = usvg::Options {
         path: Some(in_svg.clone()),
-        dpi: args.dpi as f64,
+        dpi_units: args.dpi as f64,
+        dpi_render: args.dpi as f64,
         font_family: args.font_family.take().unwrap_or_else(|| "Times New Roman".to_string()),
         font_size: args.font_size as f64,
         languages: args.languages,

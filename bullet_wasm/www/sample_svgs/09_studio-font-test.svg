@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400px" height="2000px">
+    <!-- Fallback fonts -->
+    <text x="10px" y="25px" style="font-family:Roboto; font-size:large; font-style:Regular;">This is Roboto</text>
+    <text x="10px" y="50px" style="font-family:sans-serif; font-size:large; font-style:Regular;">This is sans-serif (Roboto)</text>
+    <text x="10px" y="75px" style="font-family:Comic Neue; font-size:large; font-style:Regular;">This is Comic Neue</text>
+    <text x="10px" y="100px" style="font-family:cursive; font-size:large; font-style:Regular;">This is cursive (Comic Neue)</text>
+    <text x="10px" y="125px" style="font-family:Oswald; font-size:large; font-style:Regular;">This is Oswald</text>
+    <text x="10px" y="150px" style="font-family:fantasy; font-size:large; font-style:Regular;">This is Fantasy</text>
+    <text x="10px" y="175px" style="font-family:Roboto Mono" font-size="large" font-style="regular">This is Roboto Mono</text>
+    <text x="10px" y="200px" style="font-family:monospace" font-size="large" font-style="regular">This is monospace</text>
+    <text x="10px" y="250px" style="font-family:Roboto Slab" font-size="large" font-style="regular">This is Roboto Slab</text>
+    <text x="10px" y="275px" style="font-family:serif" font-size="large" font-style="regular">This is serif</text>
+    <text x="10px" y="300px" style="font-family:IBM Plex Sans" font-size="large" font-style="regular">This is IBM Plex Sans</text>
+
+    <!-- Handwriting Fonts -->
+    <text x="10px" y="350px" font-size="25px" font-style="bold">Handwriting Fonts</text>
+    <text x="10px" y="375px" style="font-family:Amatic SC Bold" font-size="large">This is Amatic SC Bold</text>
+    <text x="10px" y="400px" style="font-family:Amatic SC" font-size="large" font-style="regular">This is Amatic SC Regular</text>
+    <text x="10px" y="425px" style="font-family:Architects Daughter" font-size="large" font-style="regular">This is ArchitectsDaughter-Regular</text>
+    <text x="10px" y="450px" style="font-family:Caveat" font-size="large" font-style="regular">This is Caveat Regular</text>
+    <text x="10px" y="475px" style="font-family:Caveat Bold" font-size="large" font-style="regular">This is Caveat Bold</text>
+    <text x="10px" y="500px" style="font-family:Knewave" font-size="large" font-style="regular">This is Knewave-Regular</text>
+    <text x="10px" y="525px" style="font-family:Komika Title" font-size="large" font-style="regular">This is Komika Title</text>
+    <text x="10px" y="550px" style="font-family:Meddon" font-size="large" font-style="regular">This is Meddon-Regular</text>
+    <text x="10px" y="575px" style="font-family:Meow Script" font-size="large" font-style="regular">This is MeowScript</text>
+    <text x="10px" y="600px" style="font-family:Sacramento" font-size="large" font-style="regular">This is Sacramento</text>
+    <text x="10px" y="625px" style="font-family:Vibur" font-size="large" font-style="regular">This is Vibur</text>
+
+    <!-- Novelty Fonts -->
+    <text x="10px" y="675px" font-size="25px" font-style="bold">Novelty Fonts</text>
+    <text x="10px" y="700" style="font-family:Bungee" font-size="large" font-style="regular">This is Bungee-Regular</text>
+    <text x="10px" y="725" style="font-family:Creepster" font-size="large" font-style="regular">This is Creepster-Regular</text>
+    <text x="10px" y="750" style="font-family:Germania One" font-size="large" font-style="regular">This is GermaniaOne-Regular</text>
+    <text x="10px" y="775" style="font-family:Limelight" font-size="large" font-style="regular">This is Limelight-Regular</text>
+    <text x="10px" y="800" style="font-family:Megrim" font-size="large" font-style="regular">This is Megrim-Regular</text>
+    <text x="10px" y="825" style="font-family:Oi" font-size="large" font-style="regular">This is Oi-Regular</text>
+    <text x="10px" y="850" style="font-family:Plaster" font-size="large" font-style="regular">This is Plaster-Regular</text>
+    <text x="10px" y="875" style="font-family:Sancreek" font-size="large" font-style="regular">This is Sancreek-Regular</text>
+    <text x="10px" y="900" style="font-family:Shrikhand" font-size="large" font-style="regular">This is Shrikhand-Regular</text>
+    <text x="10px" y="925" style="font-family:Uncial Antiqua" font-size="large" font-style="regular">This is UncialAntiqua-Regular</text>
+
+    <!-- Sans-Serif Fonts -->
+    <text x="10px" y="975px" font-size="25px" font-style="bold">Sans-Serif</text>
+    <text x="10px" y="1025" style="font-family:Bebas Neue" font-size="large" font-style="regular">This is Bebas_Neue</text>
+    <text x="10px" y="1050" style="font-family:Inter" font-size="large" font-style="regular">This is Inter</text>
+    <text x="10px" y="1075" style="font-family:Inter Black" font-size="large" font-style="regular">This is Inter Black</text>
+    <text x="10px" y="1100" style="font-family:Jost" font-size="large" font-style="regular">This is Jost</text>
+    <text x="10px" y="1125" style="font-family:Jost Black" font-size="large" font-style="regular">This is Jost Black</text>
+    <text x="10px" y="1150" style="font-family:Jura" font-size="large" font-style="regular">This is Jura</text>
+    <text x="10px" y="1175" style="font-family:Jura Black" font-size="large" font-style="regular">This is Jura Black</text>
+    <text x="10px" y="1200" style="font-family:National Park" font-size="large" font-style="regular">This is NationalPark</text>
+    <text x="10px" y="1225" style="font-family:National Park Heavy" font-size="large" font-style="regular">This is National Park Heavy</text>
+    <text x="10px" y="1250" style="font-family:Nova Cut" font-size="large" font-style="regular">This is Nova Cut</text>
+    <text x="10px" y="1275" style="font-family:Quicksand" font-size="large" font-style="regular">This is Quicksand</text>
+    <text x="10px" y="1300" style="font-family:Quicksand Bold" font-size="large" font-style="regular">This is Quicksand Bold</text>
+    <text x="10px" y="1325" style="font-family:Space Mono" font-size="large" font-style="regular">This is Space Mono</text>
+    <text x="10px" y="1350" style="font-family:Space Mono Bold" font-size="large" font-style="regular">This is Space Mono Bold</text>
+    <text x="10px" y="1375" style="font-family:Swell Braille" font-size="large" font-style="regular">This is Swell Braille</text>
+    
+    <!-- Script Fonts -->
+    <text x="10px" y="1425" font-size="25px" font-style="bold">Script</text>
+    <text x="10px" y="1450" style="font-family:Birthstone" font-size="large" font-style="regular">This is Birthstone</text>
+    <text x="10px" y="1475" style="font-family:Grand Hotel" font-size="large" font-style="regular">This is Grand_Hotel</text>
+    <text x="10px" y="1500" style="font-family:Great Vibes" font-size="large" font-style="regular">This is Great Vibes</text>
+    <text x="10px" y="1525" style="font-family:Lobster Two" font-size="large" font-style="regular">This is Lobster Two Regular</text>
+    <text x="10px" y="1550" style="font-family:Lobster Two Bold" font-size="large" font-style="regular">This is Lobster Two Bold</text>
+    <text x="10px" y="1575" style="font-family:Pacifico" font-size="large" font-style="regular">This is Pacifico</text>
+    <text x="10px" y="1600" style="font-family:Petit Formal Script" font-size="large" font-style="regular">This is Petit Formal Script</text>
+
+    <!-- Serif Fonts -->
+    <text x="10px" y="1650" font-size="25px" font-style="bold">Serif</text>
+    <text x="10px" y="1675" style="font-family:Abril Fatface" font-size="large" font-style="regular">This is Abril Fatface</text>
+    <text x="10px" y="1700" style="font-family:Alegreya" font-size="large" font-style="regular">This is Alegreya</text>
+    <text x="10px" y="1725" style="font-family:Alegreya Black" font-size="large" font-style="regular">This is Alegreya Black</text>
+    <text x="10px" y="1750" style="font-family:Cinzel" font-size="large" font-style="regular">This is Cinzel</text>
+    <text x="10px" y="1775" style="font-family:Cinzel Black" font-size="large" font-style="regular">This is Cinzel Black</text>
+    <text x="10px" y="1800" style="font-family:Graduate" font-size="large" font-style="regular">This is Graduate</text>
+    <text x="10px" y="1825" style="font-family:Playfair Display" font-size="large" font-style="regular">This is Playfair Display</text>
+    <text x="10px" y="1850" style="font-family:Playfair Display Black" font-size="large" font-style="regular">This is Playfair Display Black</text>
+    <text x="10px" y="1875" style="font-family:Yeseva One" font-size="large" font-style="regular">This is Yeseva One</text>
+</svg>

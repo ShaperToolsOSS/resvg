@@ -6,7 +6,7 @@ use std::fmt::Display;
 use std::io::Write;
 use std::ops::Deref;
 
-use svgtypes::WriteBuffer;
+use svgtypes::{WriteBuffer,LengthUnit};
 use xmlwriter::XmlWriter;
 
 use super::*;
@@ -37,6 +37,66 @@ pub fn convert(tree: &Tree, opt: XmlOptions) -> String {
 
     xml.end_document()
 }
+
+fn get_pixel_to_unit_conversion(unit: svgtypes::LengthUnit, dpi: f64)-> f64{
+        //Not supported: Em, Ex, Percent
+    match unit {
+        LengthUnit::None => 1.0,
+        LengthUnit::Em => 1.0,
+        LengthUnit::Ex => 1.0,
+        LengthUnit::Px => 1.0,
+        LengthUnit::In => 1.0 / dpi,
+        LengthUnit::Cm => 2.54 / dpi,
+        LengthUnit::Mm => 25.4 / dpi,
+        LengthUnit::Pt => 72.0 / dpi,
+        LengthUnit::Pc =>  6.0 / dpi,
+        LengthUnit::Percent => 1.0,
+    }
+}
+
+fn get_unit_label(unit: svgtypes::LengthUnit)-> &'static str{
+    match unit {
+        LengthUnit::None => "",
+        LengthUnit::Em => "em",
+        LengthUnit::Ex => "ex",
+        LengthUnit::Px => "px",
+        LengthUnit::In => "in",
+        LengthUnit::Cm => "cm",
+        LengthUnit::Mm => "mm",
+        LengthUnit::Pt => "pt",
+        LengthUnit::Pc =>  "pc",
+        LengthUnit::Percent => "%",
+    }
+}
+
+pub fn convert_with_unit(tree: &Tree, opt: XmlOptions, unit: svgtypes::LengthUnit, dpi: f64) -> String {
+    let mut xml = XmlWriter::new(opt);
+
+    let unit_conversion_factor = get_pixel_to_unit_conversion(unit, dpi);
+    let unit_label = get_unit_label(unit);
+    let svg_node = tree.svg_node();
+
+    xml.start_svg_element(EId::Svg);
+    xml.write_svg_attribute(AId::Width, &((svg_node.size.width() * unit_conversion_factor).to_string() + unit_label));
+    xml.write_svg_attribute(AId::Height, &((svg_node.size.height() * unit_conversion_factor).to_string() + unit_label));
+    xml.write_viewbox(&svg_node.view_box);
+    xml.write_attribute("xmlns", "http://www.w3.org/2000/svg");
+    if has_xlink(tree) {
+        xml.write_attribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
+    }
+    xml.write_attribute("xmlns:usvg", "https://github.com/RazrFalcon/resvg");
+    xml.write_attribute("usvg:version", env!("CARGO_PKG_VERSION"));
+
+    xml.start_svg_element(EId::Defs);
+    conv_defs(tree, &mut xml);
+    xml.end_element();
+
+    conv_elements(&tree.root(), false, &mut xml);
+
+    xml.end_document()
+}
+
+
 
 fn conv_defs(
     tree: &Tree,
@@ -791,6 +851,37 @@ fn write_path(
                     x2.write_buf(buf);
                     buf.push(b' ');
                     y2.write_buf(buf);
+                    buf.push(b' ');
+                    x.write_buf(buf);
+                    buf.push(b' ');
+                    y.write_buf(buf);
+                    buf.push(b' ');
+                }
+                #[cfg(feature = "accurate-arcs")]
+                PathSegment::ArcTo { rx, ry, x_axis_rotation,    large_arc, sweep, x, y } => {
+                    
+                    let large_arc_val = if large_arc {
+                        1.0
+                    } else {
+                        0.0
+                    };
+
+                    let sweep_val = if sweep {
+                        1.0
+                    } else {
+                        0.0
+                    };
+                    
+                    buf.extend_from_slice(b"A ");
+                    rx.write_buf(buf);
+                    buf.push(b' ');
+                    ry.write_buf(buf);
+                    buf.push(b' ');
+                    x_axis_rotation.write_buf(buf);
+                    buf.push(b' ');
+                    large_arc_val.write_buf(buf);
+                    buf.push(b' ');
+                    sweep_val.write_buf(buf);
                     buf.push(b' ');
                     x.write_buf(buf);
                     buf.push(b' ');

@@ -730,8 +730,10 @@ pub trait SvgNodeExt {
     fn resolve_length(&self, aid: AId, state: &State, def: f64) -> f64;
     fn resolve_valid_length(&self, aid: AId, state: &State, def: f64) -> Option<f64>;
     fn convert_length(&self, aid: AId, object_units: tree::Units, state: &State, def: Length) -> f64;
+    fn convert_resolution(&self, aid: AId, object_units: tree::Units, state: &State, def: Length) -> f64;
     fn try_convert_length(&self, aid: AId, object_units: tree::Units, state: &State) -> Option<f64>;
     fn convert_user_length(&self, aid: AId, state: &State, def: Length) -> f64;
+    fn convert_user_resolution(&self, aid: AId, state: &State, def: Length) -> f64;
     fn try_convert_user_length(&self, aid: AId, state: &State) -> Option<f64>;
     fn is_visible_element(&self, opt: &Options) -> bool;
 }
@@ -759,12 +761,20 @@ impl<'a> SvgNodeExt for svgtree::Node<'a> {
         units::convert_length(self.attribute(aid).unwrap_or(def), *self, aid, object_units, state)
     }
 
+    fn convert_resolution(&self, aid: AId, object_units: tree::Units, state: &State, def: Length) -> f64 {
+        units::convert_resolution(self.attribute(aid).unwrap_or(def), *self, aid, object_units, state)
+    }
+
     fn try_convert_length(&self, aid: AId, object_units: tree::Units, state: &State) -> Option<f64> {
         Some(units::convert_length(self.attribute(aid)?, *self, aid, object_units, state))
     }
 
     fn convert_user_length(&self, aid: AId, state: &State, def: Length) -> f64 {
         self.convert_length(aid, tree::Units::UserSpaceOnUse, state, def)
+    }
+
+    fn convert_user_resolution(&self, aid: AId, state: &State, def: Length) -> f64 {
+        self.convert_resolution(aid, tree::Units::UserSpaceOnUse, state, def)
     }
 
     fn try_convert_user_length(&self, aid: AId, state: &State) -> Option<f64> {

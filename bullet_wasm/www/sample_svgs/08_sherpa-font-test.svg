@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400px" height="1000px">
+    <text x="10px" y="25px" style="font-family:Berkshire Swash" font-size="large" font-style="regular">This is Berkshire Swash Regular</text>
+    <text x="10px" y="50px" style="font-family:Caveat" font-size="large" font-style="regular">This is Caveat Regular</text>
+    <text x="10px" y="75px" style="font-family:Caveat Bold" font-size="large" font-style="regular">This is Caveat Bold</text>
+    <text x="10px" y="100px" style="font-family:Great Vibes" font-size="large" font-style="regular">This is Great Vibes</text>
+    <text x="10px" y="125px" style="font-family:Pacifico" font-size="large" font-style="regular">This is Pacifico</text>
+    <text x="10px" y="150px" style="font-family:Bebas Neue" font-size="large" font-style="regular">This is Bebas Neue Regular</text>
+    <text x="10px" y="175px" style="font-family:Inter Black" font-size="large" font-style="regular">This is Inter Black</text>
+    <text x="10px" y="200px" style="font-family:Inter Bold" font-size="large" font-style="regular">This is Inter Bold</text>
+    <text x="10px" y="225px" style="font-family:Inter" font-size="large" font-style="regular">This is Inter</text>
+    <text x="10px" y="250px" style="font-family:Inter Thin" font-size="large" font-style="regular">This is Inter Thin</text>
+    <text x="10px" y="275px" style="font-family:National Park" font-size="large" font-style="regular">This is National Park Regular</text>
+    <text x="10px" y="300px" style="font-family:National Park Heavy" font-size="large" font-style="regular">This is National Park Heavy</text>
+    <text x="10px" y="325px" style="font-family:National Park Outline" font-size="large" font-style="regular">This is National Park Outline</text>
+    <text x="10px" y="350px" style="font-family:Space Mono" font-size="large" font-style="regular">This is Space Mono</text>
+    <text x="10px" y="375px" style="font-family:Space Mono Bold" font-size="large" font-style="regular">This is Space Mono Bold</text>
+    <text x="10px" y="400px" style="font-family:Alegreya Black; font-size:large; font-style:Regular;">This is Alegreya Black</text>
+    <text x="10px" y="425px" style="font-family:Alegreya Bold; font-size:large; font-style:Regular;">This is Alegreya Bold</text>
+    <text x="10px" y="450px" style="font-family:Alegreya; font-size:large; font-style:Regular;">This is Alegreya Regular</text>
+    <text x="10px" y="475px" style="font-family:Playfair Display Black; font-size:large; font-style:Regular;">This is Playfair Display Black</text>
+    <text x="10px" y="500px" style="font-family:Playfair Display Bold; font-size:large; font-style:Regular;">This is Playfair Display Bold</text>
+    <text x="10px" y="525px" style="font-family:Playfair Display; font-size:large; font-style:Regular;">This is Playfair Display Regular</text>
+    <text x="10px" y="550px" style="font-family:Roboto Slab Black; font-size:large; font-style:Regular;">This is Roboto Slab Black</text>
+    <text x="10px" y="575px" style="font-family:Roboto Slab Bold; font-size:large; font-style:Regular;">This is Roboto Slab Bold</text>
+    <text x="10px" y="600px" style="font-family:Roboto Slab; font-size:large; font-style:Regular;">This is Roboto Slab</text>
+    <text x="10px" y="625px" style="font-family:Roboto Slab Thin; font-size:large; font-style:Regular;">This is Roboto Slab Thin</text>
+    <text x="10px" y="650px" style="font-family:SLF-MCH Architect; font-size:large; font-style:Regular;">This is SLF-MCH Architect</text>
+    <text x="10px" y="675px" style="font-family:SLF-RHN RSVP-2; font-size:large; font-style:Regular;">This is SLF-RHN RSVP-2</text>
+    <text x="10px" y="700px" style="font-family:Swell Braille; font-size:large; font-style:Regular;">This is Swell Braille</text>
+</svg>

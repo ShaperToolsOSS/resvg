@@ -9,6 +9,8 @@ use ttf_parser::GlyphId;
 
 use crate::{tree, fontdb_ext, convert::prelude::*};
 use crate::tree::CubicBezExt;
+#[cfg(feature="accurate-arcs")]
+use crate::tree::PathData;
 use crate::fontdb_ext::DatabaseExt;
 use super::convert::{
     ByteIndex,
@@ -593,6 +595,7 @@ struct PathNormal {
     angle: f64,
 }
 
+#[cfg(not(feature = "accurate-arcs"))]
 fn collect_normals(
     chunk: &TextChunk,
     clusters: &[OutlinedCluster],
@@ -695,6 +698,214 @@ fn collect_normals(
         length += curve_len;
         prev_x = curve.p3.x;
         prev_y = curve.p3.y;
+    }
+
+    // If path ended and we still have unresolved normals - set them to `None`.
+    for _ in 0..(offsets.len() - normals.len()) {
+        normals.push(None);
+    }
+
+    normals
+}
+
+#[cfg(feature = "accurate-arcs")]
+use kurbo::{Point, PathEl, PathSeg, BezPath};
+#[cfg(feature = "accurate-arcs")]
+fn collect_normals(
+    chunk: &TextChunk,
+    clusters: &[OutlinedCluster],
+    path: &tree::PathData,
+    pos_list: &[CharacterPosition],
+    char_offset: usize,
+    offset: f64,
+) -> Vec<Option<PathNormal>> {
+    debug_assert!(!path.is_empty());
+
+    let mut offsets = Vec::with_capacity(clusters.len());
+    let mut normals = Vec::with_capacity(clusters.len());
+    {
+        let mut advance = offset;
+        for cluster in clusters {
+            // Clusters should be rotated by the x-midpoint x baseline position.
+            let half_width = cluster.width / 2.0;
+
+            // Include relative position.
+            let cp = char_offset + cluster.byte_idx.code_point_at(&chunk.text);
+            if let Some(pos) = pos_list.get(cp) {
+                advance += pos.dx.unwrap_or(0.0);
+            }
+
+            let offset = advance + half_width;
+
+            // Clusters outside the path have no normals.
+            if offset < 0.0 {
+                normals.push(None);
+            }
+
+            offsets.push(offset);
+            advance += cluster.advance;
+        }
+    }
+
+    let (mut prev_mx, mut prev_my, mut prev_x, mut prev_y) = {
+        if let tree::PathSegment::MoveTo { x, y } = path[0] {
+            (x, y, x, y)
+        } else {
+            unreachable!();
+        }
+    };
+
+    // fn create_curve_from_line(px: f64, py: f64, x: f64, y: f64) -> kurbo::CubicBez {
+    //     let line = kurbo::Line::new(kurbo::Point::new(px, py), kurbo::Point::new(x, y));
+    //     let p1 = line.eval(0.33);
+    //     let p2 = line.eval(0.66);
+    //     kurbo::CubicBez::from_points(px, py, p1.x, p1.y, p2.x, p2.y, x, y)
+    // }
+
+    let mut length = 0.0;
+    for seg in path.iter() {
+        let curve = match *seg {
+            tree::PathSegment::MoveTo { x, y } => {
+                prev_mx = x;
+                prev_my = y;
+                prev_x = x;
+                prev_y = y;
+                continue;
+            }
+            tree::PathSegment::LineTo { x, y } => {
+                BezPath::from_vec(
+                    vec![
+                        PathEl::MoveTo(Point::new(prev_x, prev_y)),
+                        PathEl::LineTo(Point::new(x, y))
+                    ]
+                )
+            }
+            tree::PathSegment::CurveTo { x1, y1, x2, y2, x, y } => {
+                BezPath::from_vec(
+                    vec![
+                        PathEl::MoveTo(Point::new(prev_x, prev_y)),
+                        PathEl::CurveTo(Point::new(x1, y1), Point::new(x2, y2), Point::new(x, y))
+                    ]
+                )                
+            }
+            tree::PathSegment::ArcTo {rx, ry, x_axis_rotation, large_arc, sweep, x, y} => {
+                match PathData::convert_svg_arc(prev_x, prev_y, rx, ry, x_axis_rotation, large_arc, sweep, x, y) {
+                    Some(arc) => {
+                        use kurbo::Shape;
+                        use std::iter::FromIterator;
+                        BezPath::from_iter(arc.path_elements(0.1))
+                    }
+                    None => {
+                        BezPath::from_vec(
+                            vec![
+                                PathEl::MoveTo(Point::new(prev_x, prev_y)),
+                                PathEl::LineTo(Point::new(x, y))
+                            ]
+                        )
+                    }
+                } 
+            }
+            tree::PathSegment::ClosePath => {
+                BezPath::from_vec(
+                    vec![
+                        PathEl::MoveTo(Point::new(prev_x, prev_y)),
+                        PathEl::LineTo(Point::new(prev_mx, prev_my))
+                    ]
+                )
+            }
+        };
+
+        //TODO - move next two to kurbo::BezPath impl ParamCurveArcLen
+        fn bezpath_arclen(accuracy: f64, bez_path: &BezPath) -> f64 {
+            bez_path.segments().fold(0.0, |cum_len, s| cum_len + s.arclen(accuracy))
+        }
+
+        fn bezpath_inv_arclen(arclen: f64, accuracy: f64, bez_path: &BezPath) -> f64 {
+            let tot_len = bezpath_arclen(accuracy, bez_path);
+
+            arclen / tot_len
+        }
+
+        // TODO - move to kurbo::BezPath impl ParamCurve
+        fn bezpath_eval(t: f64, accuracy: f64, bez_path: &BezPath) -> Point {
+            // Get total path length
+            let bez_path_len = bezpath_arclen(accuracy, bez_path);
+            // Get length_t at t
+            let t_path_len = bez_path_len * t;
+            
+            let mut seg_start_len = 0.0;
+            // Find segment containing length_t
+            for seg in bez_path.segments() {
+                // find length_s0 at s(t=0) and seg_length
+                let seg_len = seg.arclen(accuracy);
+                let seg_end_len = seg_len + seg_start_len;
+                
+                //TODO - fuzzy eq
+                if t_path_len >= seg_start_len && t_path_len <= seg_end_len {
+                    let frac_len = t_path_len - seg_start_len;
+                    let seg_t = frac_len / seg_len;
+                    return seg.eval(seg_t)
+                }
+                seg_start_len = seg_end_len;
+            }
+            // Return last segment endpoint if t >= 1
+            bez_path.segments().last().unwrap().eval(1.0)
+        }
+
+         // NB - would be nice to move to kurbo::PathSeg impl ParamCurveDeriv
+         // But deriv of line is ConstPoint, and PathSeg enum does not include this.
+         // Would need to extend the enum, which has a blast radius to add additional arms for everything that touches PathSeg.
+         //Instead, convert each seg to cubic and deriv is always QuadBez. Some params are redundant, but this is ok.
+        fn pathseg_deriv(pathseg: PathSeg) -> PathSeg {
+            PathSeg::Quad(pathseg.to_cubic().deriv())
+        }
+
+        //TODO - move to kurbo::BezPath impl ParamCurveDeriv
+        fn bezpath_deriv(bez_path: &BezPath) -> BezPath {
+            let seg_deriv_iter = bez_path.segments().map( |s| pathseg_deriv(s) );
+
+            BezPath::from_path_segments(
+                seg_deriv_iter
+            )
+        }
+
+        let arclen_accuracy = 0.5;
+        let curve_len = bezpath_arclen(arclen_accuracy, &curve);
+
+        for offset in &offsets[normals.len()..] {
+            if *offset >= length && *offset <= length + curve_len {
+                // let mut offset = curve.inv_arclen(offset - length, arclen_accuracy);
+                let mut offset = bezpath_inv_arclen(offset - length, arclen_accuracy, &curve);
+                // some rounding error may occur, so we give offset a little tolerance
+                
+                debug_assert!(offset >= -1.0e-3 && offset <= 1.0 + 1.0e-3);
+                offset = offset.min(1.0).max(0.0);
+
+                // let pos = curve.eval(offset);
+                let pos = bezpath_eval(offset, arclen_accuracy, &curve);
+                // let d = curve.deriv().eval(offset);
+                let d = bezpath_eval(offset, arclen_accuracy, &bezpath_deriv(&curve)); 
+                let d = kurbo::Vec2::new(-d.y, d.x); // tangent
+                let angle = d.atan2().to_degrees() - 90.0;
+
+                normals.push(Some(PathNormal {
+                    x: pos.x,
+                    y: pos.y,
+                    angle,
+                }));
+
+                if normals.len() == offsets.len() {
+                    break;
+                }
+            }
+        }
+
+        length += curve_len;
+        // prev_x = curve.p3.x;
+        // prev_y = curve.p3.y;
+        let last_pt = curve.segments().last().unwrap().eval(1.0);
+        prev_x = last_pt.x;
+        prev_y = last_pt.y;
     }
 
     // If path ended and we still have unresolved normals - set them to `None`.

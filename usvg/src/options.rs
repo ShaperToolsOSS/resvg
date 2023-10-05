@@ -56,12 +56,19 @@ pub struct Options {
     /// Default: `None`
     pub path: Option<PathBuf>,
 
-    /// Target DPI.
+    /// Unit conversion DPI.
     ///
     /// Impact units conversion.
     ///
     /// Default: 96.0
-    pub dpi: f64,
+    pub dpi_units: f64,
+
+    /// Render DPI.
+    ///
+    /// Sets output rendering resolution
+    ///
+    /// Default: 96.0
+    pub dpi_render: f64,
 
     /// A default font family.
     ///
@@ -138,7 +145,8 @@ impl Default for Options {
     fn default() -> Options {
         Options {
             path: None,
-            dpi: 96.0,
+            dpi_units: 96.0,
+            dpi_render: 96.0,
             // Default font is user-agent dependent so we can use whichever we like.
             font_family: "Times New Roman".to_owned(),
             font_size: 12.0,

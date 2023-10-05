@@ -9,7 +9,8 @@ description = "An SVG rendering library."
 repository = "https://github.com/RazrFalcon/resvg"
 
 [workspace]
-members = ["c-api", "svgfilters", "usvg"]
+members = ["c-api", "svgfilters", "usvg", "bullet_svg"]
+exclude = ["bullet_wasm"]
 
 [badges]
 travis-ci = { repository = "RazrFalcon/resvg" }
@@ -27,6 +28,9 @@ rgb = "0.8"
 svgfilters = { path = "svgfilters", version = "0.2" }
 tiny-skia = "0.2"
 usvg = { path = "usvg", version = "0.12", default-features = false }
+
+[patch.crates-io]
+kurbo = { path = "../kurbo" }
 
 [dev-dependencies]
 rayon = "1.3"

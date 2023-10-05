@@ -1,0 +1,23 @@
+<svg viewBox="0 0 225 100" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- to hide the path, it is usually wrapped in a <defs> element -->
+  <!-- <defs> -->
+  <path id="MyPath" fill="none" stroke="red"
+        d="M10,90 Q90,90 90,45 Q90,10 50,10 Q10,10 10,40 Q10,70 45,70 Q70,70 75,50" />
+  <path id="MyArc" fill="none" stroke="blue" d="m 200,25 a 46.302082,16.441961 0 0 1 -35.487677,15.98721 46.302082,16.441961 0 0 1 -52.06482,-8.5192 46.302082,16.441961 0 0 1 11.16694,-19.96673"/>
+  <!-- </defs> -->
+
+  <text>
+    <textPath href="#MyPath" style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Roboto;">
+      Roboto on a curve
+    </textPath>
+  </text>
+  <text>
+     <textPath href="#MyArc" style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Oswald;font-size: small" startOffset="40" side="right">
+      Oswald on an Arc
+    </textPath>
+  </text>
+  <text x="100" y="75" style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Comic Neue;font-size: small">
+      Comic Sans rules!
+  </text>
+</svg>

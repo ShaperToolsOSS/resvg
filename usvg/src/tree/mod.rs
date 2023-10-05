@@ -9,6 +9,7 @@ use std::path;
 
 pub use self::{nodes::*, attributes::*, pathdata::*};
 use crate::{svgtree, Rect, Error, Options, XmlOptions};
+use svgtypes::LengthUnit;
 
 mod attributes;
 mod export;
@@ -158,6 +159,11 @@ impl Tree {
     #[inline]
     pub fn to_string(&self, opt: XmlOptions) -> String {
         export::convert(self, opt)
+    }
+
+    #[inline]
+    pub fn to_string_with_unit(&self, opt: XmlOptions, output_unit: svgtypes::LengthUnit, dpi: f64 ) -> String {
+        export::convert_with_unit(self, opt, output_unit, dpi)
     }
 }
 

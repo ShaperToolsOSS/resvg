@@ -3,3 +3,5 @@ target
 .idea
 build-*
 workdir-*
+node_modules
+.vscode

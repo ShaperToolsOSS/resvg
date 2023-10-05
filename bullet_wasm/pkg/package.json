@@ -1,0 +1,27 @@
+{
+  "name": "bullet_wasm",
+  "collaborators": [
+    "Jon Hollander <jh@shapertools.com>"
+  ],
+  "description": "WASM bindings for Shaper Tools Bulletproof SVG Parser",
+  "version": "0.1.0",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ShaperTools/resvg"
+  },
+  "files": [
+    "bullet_wasm_bg.wasm",
+    "bullet_wasm.js",
+    "bullet_wasm_bg.js",
+    "bullet_wasm.d.ts",
+    "LICENSE_MIT",
+    "LICENSE_APACHE"
+  ],
+  "module": "bullet_wasm.js",
+  "types": "bullet_wasm.d.ts",
+  "sideEffects": [
+    "./bullet_wasm.js",
+    "./snippets/*"
+  ]
+}

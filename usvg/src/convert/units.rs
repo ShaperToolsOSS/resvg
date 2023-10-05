@@ -14,7 +14,7 @@ pub fn convert_length(
     object_units: tree::Units,
     state: &State,
 ) -> f64 {
-    let dpi = state.opt.dpi;
+    let dpi = state.opt.dpi_units;
     let n = length.num;
     match length.unit {
         Unit::None | Unit::Px => n,
@@ -25,6 +25,53 @@ pub fn convert_length(
         Unit::Mm => n * dpi / 25.4,
         Unit::Pt => n * dpi / 72.0,
         Unit::Pc => n * dpi / 6.0,
+        Unit::Percent => {
+            if object_units == tree::Units::ObjectBoundingBox {
+                length.num / 100.0
+            } else {
+                let view_box = state.view_box;
+
+                match aid {
+                    AId::X | AId::Cx | AId::Width  => {
+                        convert_percent(length, view_box.width())
+                    }
+                    AId::Y | AId::Cy | AId::Height => {
+                        convert_percent(length, view_box.height())
+                    }
+                    _ => {
+                        let vb_len = (
+                              view_box.width() * view_box.width()
+                            + view_box.height() * view_box.height()
+                        ).sqrt() / 2.0_f64.sqrt();
+
+                        convert_percent(length, vb_len)
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[inline(never)]
+pub fn convert_resolution(
+    length: Length,
+    node: svgtree::Node,
+    aid: AId,
+    object_units: tree::Units,
+    state: &State,
+) -> f64 {
+    let dpi_render = state.opt.dpi_render;
+    let dpi_units = state.opt.dpi_units;
+    let n = length.num;
+    match length.unit {
+        Unit::None | Unit::Px => n,
+        Unit::Em => n * resolve_font_size(node, state),
+        Unit::Ex => n * resolve_font_size(node, state) / 2.0,
+        Unit::In => n * dpi_render,
+        Unit::Cm => n * dpi_render / 2.54,
+        Unit::Mm => n * dpi_render / 25.4,
+        Unit::Pt => n * dpi_render / 72.0,
+        Unit::Pc => n * dpi_render / 6.0,
         Unit::Percent => {
             if object_units == tree::Units::ObjectBoundingBox {
                 length.num / 100.0
@@ -82,7 +129,7 @@ pub fn resolve_font_size(node: svgtree::Node, state: &State) -> f64 {
     let mut font_size = state.opt.font_size;
     for n in nodes.iter().rev().skip(1) { // skip Root
         if let Some(length) = n.attribute::<Length>(AId::FontSize) {
-            let dpi = state.opt.dpi;
+            let dpi = state.opt.dpi_units;
             let n = length.num;
             font_size = match length.unit {
                 Unit::None | Unit::Px => n,

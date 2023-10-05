@@ -6,6 +6,9 @@ use std::f64;
 use std::rc::Rc;
 
 use crate::{utils, svgtree, tree, tree::prelude::*, tree::PathSegment as Segment};
+#[cfg(feature = "accurate-arcs")]
+use crate::tree::{arc_util::centerpoint_arc_tangent, PathData};
+
 use super::{prelude::*, use_node};
 
 
@@ -256,6 +259,24 @@ fn calc_vertex_angle(path: &tree::PathData, idx: usize) -> f64 {
                     calc_line_angle(mx, my, x1, y1)
                 }
             }
+            #[cfg(feature="accurate-arcs")]
+            // Finding tangent vector of arc points using derivative of centerpoint parameterization
+            // See https://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
+            //Treat tangent vector just like lineTo
+            
+            // Alternatively, could just convert to bezier and treat as curve.
+            (Segment::MoveTo { x: mx, y: my }, Segment::ArcTo {rx, ry, x_axis_rotation, large_arc, sweep, x, y}) => {
+
+                match PathData::convert_svg_arc(mx, my, rx, ry, x_axis_rotation, large_arc, sweep, x, y) {
+                    Some(arc) => {
+                        let arc_tangent_vec = centerpoint_arc_tangent(arc, 0.0);
+                        calc_line_angle(mx, my, arc_tangent_vec.x, arc_tangent_vec.y)
+                    }
+                    None => {
+                        calc_line_angle(mx, my, x, y)
+                    }
+                }
+            }
             _ => 0.0,
         }
     } else if idx == path.len() - 1 {
@@ -277,9 +298,40 @@ fn calc_vertex_angle(path: &tree::PathData, idx: usize) -> f64 {
                     calc_line_angle(x2, y2, x, y)
                 }
             }
+            #[cfg(feature="accurate-arcs")]
+            (_, Segment::ArcTo {rx, ry, x_axis_rotation, large_arc, sweep, x, y}) => {
+                let (px, py) = get_prev_vertex(path, idx);
+                
+                match PathData::convert_svg_arc(px, py, rx, ry, x_axis_rotation, large_arc, sweep, x, y) {
+                    Some(arc) => {
+                        let arc_tangent_vec = centerpoint_arc_tangent(arc, 1.0);
+                        calc_line_angle(0.0, 0.0, arc_tangent_vec.x, arc_tangent_vec.y)
+                    }
+                    None => {
+                        let (px, py) = get_prev_vertex(path, idx);
+                        calc_line_angle(px, py, x, y)
+                    }
+                } 
+            }
             (Segment::LineTo { x, y }, Segment::ClosePath) => {
                 let (nx, ny) = get_subpath_start(path, idx);
                 calc_line_angle(x, y, nx, ny)
+            }
+            #[cfg(feature="accurate-arcs")]
+            (Segment::ArcTo {rx, ry, x_axis_rotation, large_arc, sweep, x, y}, Segment::ClosePath) => {
+                
+                let (px, py) = get_prev_vertex(path, idx);
+                let (nx, ny) = get_subpath_start(path, idx);
+                
+                match PathData::convert_svg_arc(px, py, rx, ry, x_axis_rotation, large_arc, sweep, x, y) {
+                    Some(arc) => {
+                        let arc_tangent_vec = centerpoint_arc_tangent(arc, 1.0);
+                        calc_angle(0.0, 0.0, arc_tangent_vec.x, arc_tangent_vec.y, x, y, nx, ny)
+                    }
+                    None => {
+                        calc_line_angle(x, y, nx, ny)
+                    }
+                } 
             }
             (Segment::CurveTo { x2, y2, x, y, .. }, Segment::ClosePath) => {
                 let (px, py) = get_prev_vertex(path, idx);
@@ -306,12 +358,52 @@ fn calc_vertex_angle(path: &tree::PathData, idx: usize) -> f64 {
             (Segment::MoveTo { x: mx, y: my }, Segment::CurveTo { x1, y1, .. }) => {
                 calc_line_angle(mx, my, x1, y1)
             }
+            #[cfg(feature="accurate-arcs")]
+            (Segment::MoveTo { x: mx, y: my }, Segment::ArcTo {rx, ry, x_axis_rotation, large_arc, sweep, x, y}) => {
+
+                match PathData::convert_svg_arc(mx, my, rx, ry, x_axis_rotation, large_arc, sweep, x, y) {
+                    Some(arc) => {
+                        let arc_tangent_vec = centerpoint_arc_tangent(arc, 0.0);
+                        calc_line_angle(0.0, 0.0, arc_tangent_vec.x, arc_tangent_vec.y)
+                    }
+                    None => {
+                        calc_line_angle(mx, my, x, y)
+                    }
+                }
+            }
             (Segment::LineTo { x: x1, y: y1 }, Segment::LineTo { x: x2, y: y2 }) => {
                 let (px, py) = get_prev_vertex(path, idx);
                 calc_angle(
                     px, py, x1, y1,
                     x1, y1, x2, y2,
                 )
+            }
+            #[cfg(feature="accurate-arcs")]
+            (Segment::ArcTo {rx: rx0, ry: ry0, x_axis_rotation: x_axis_rotation0, large_arc:large_arc0, sweep: sweep0, x: x0, y: y0}, Segment::ArcTo {rx: rx1, ry: ry1, x_axis_rotation: x_axis_rotation1, large_arc:large_arc1, sweep: sweep1, x: x1, y: y1}) => {
+
+                let (px, py) = get_prev_vertex(path, idx);
+                
+                let arc0_result = PathData::convert_svg_arc(px, py, rx0, ry0, x_axis_rotation0, large_arc0, sweep0, x0, y0);
+                let v0 = match arc0_result {
+                    Some(arc0) => {
+                        centerpoint_arc_tangent(arc0, 1.0)
+                    }
+                    None => {
+                        kurbo::Vec2::new(x0-px, y0-py)
+                    }
+                };
+
+                let arc1_result = PathData::convert_svg_arc(x0, y0, rx1, ry1, x_axis_rotation1, large_arc1, sweep1, x1, y1);
+                let v1 = match arc1_result {
+                    Some(arc1) => {
+                        centerpoint_arc_tangent(arc1, 0.0)
+                    }
+                    None => {
+                        kurbo::Vec2::new(x1-x0, y1-y0)
+                    }
+                };
+
+                calc_angle(0.0, 0.0, v0.x, v0.y, 0.0, 0.0, v1.x, v1.y)
             }
             (Segment::CurveTo { x2: c1_x2, y2: c1_y2, x, y, .. },
                 Segment::CurveTo { x1: c2_x1, y1: c2_y1, x: nx, y: ny, .. }) => {
@@ -331,6 +423,46 @@ fn calc_vertex_angle(path: &tree::PathData, idx: usize) -> f64 {
                     x1, y1, nx, ny,
                 )
             }
+            #[cfg(feature="accurate-arcs")]
+            (Segment::LineTo { x: x1, y: y1 }, Segment::ArcTo {rx, ry, x_axis_rotation, large_arc, sweep, x, y}) => {
+                let (px, py) = get_prev_vertex(path, idx);
+
+                match PathData::convert_svg_arc(x1, y1, rx, ry, x_axis_rotation, large_arc, sweep, x, y) {
+                    Some(arc) => {
+                        let arc_tangent_vec = centerpoint_arc_tangent(arc, 0.0);
+                        calc_angle(
+                            px, py, x1, y1,
+                            0.0, 0.0, arc_tangent_vec.x, arc_tangent_vec.y,
+                        )
+                    }
+                   None => {
+                        calc_angle(
+                            px, py, x1, y1,
+                            x1, y1, x, y,
+                        )
+                    }
+                }
+            }
+            #[cfg(feature="accurate-arcs")]
+            (Segment::ArcTo {rx, ry, x_axis_rotation, large_arc, sweep, x, y}, Segment::LineTo { x: x1, y: y1 }) => {
+                let (px, py) = get_prev_vertex(path, idx);
+
+                match PathData::convert_svg_arc(px, py, rx, ry, x_axis_rotation, large_arc, sweep, x, y) {
+                    Some(arc) => {
+                        let arc_tangent_vec = centerpoint_arc_tangent(arc, 1.0);
+                        calc_angle(
+                            0.0, 0.0, arc_tangent_vec.x, arc_tangent_vec.y,
+                            x, y, x1, y1,
+                        )
+                    }
+                   None => {
+                        calc_angle(
+                            px, py, x, y,
+                            x, y, x1, y1,
+                        )
+                    }
+                }
+            }
             (Segment::CurveTo { x2, y2, x, y, .. },
                 Segment::LineTo { x: nx, y: ny }) => {
                 let (px, py) = get_prev_vertex(path, idx);
@@ -344,12 +476,60 @@ fn calc_vertex_angle(path: &tree::PathData, idx: usize) -> f64 {
                 let (px, py) = get_prev_vertex(path, idx);
                 calc_line_angle(px, py, x, y)
             }
+            #[cfg(feature="accurate-arcs")]
+            (Segment::ArcTo {rx, ry, x_axis_rotation, large_arc, sweep, x, y}, Segment::MoveTo {..}) => {
+                let (px, py) = get_prev_vertex(path, idx);
+                match PathData::convert_svg_arc(px, py, rx, ry, x_axis_rotation, large_arc, sweep, x, y) {
+                    Some(arc) => {
+                        let arc_tangent_vec = centerpoint_arc_tangent(arc, 1.0);
+                        calc_line_angle(0.0, 0.0, arc_tangent_vec.x, arc_tangent_vec.y)
+                    }
+                    None => {
+                        calc_line_angle(px, py, x, y)
+                    }
+                }
+            }
             (Segment::CurveTo { x2, y2, x, y, .. }, Segment::MoveTo { .. }) => {
                 if x.fuzzy_eq(&x2) && y.fuzzy_eq(&y2) {
                     let (px, py) = get_prev_vertex(path, idx);
                     calc_line_angle(px, py, x, y)
                 } else {
                     calc_line_angle(x2, y2, x, y)
+                }
+            }
+            #[cfg(feature="accurate-arcs")]
+            (Segment::ArcTo {rx, ry, x_axis_rotation, large_arc, sweep, x, y}, Segment::CurveTo { x1, y1, .. }) => {
+                let (px, py) = get_prev_vertex(path, idx);
+                match PathData::convert_svg_arc(px, py, rx, ry, x_axis_rotation, large_arc, sweep, x, y) {
+                    Some(arc) => {
+                        let arc_tangent_vec = centerpoint_arc_tangent(arc, 1.0);
+                        
+                        //Curve tangents are vectors from endpoint to nearest control point
+                        calc_angle(
+                            0.0, 0.0, arc_tangent_vec.x, arc_tangent_vec.y,
+                            x, y, x1, y1,
+                            )
+                    }
+                    None => {
+                        calc_angle(px, py, x, y, x, y, x1, y1)
+                    }
+                }
+            }
+            #[cfg(feature="accurate-arcs")]
+            (Segment::CurveTo { x2, y2, x: xc, y: yc, .. }, Segment::ArcTo {rx, ry, x_axis_rotation, large_arc, sweep, x, y}) => {
+                match PathData::convert_svg_arc(xc, yc, rx, ry, x_axis_rotation, large_arc, sweep, x, y) {
+                    Some(arc) => {
+                        let arc_tangent_vec = centerpoint_arc_tangent(arc, 1.0);
+                        
+                        //Curve tangents are vectors from endpoint to nearest control point
+                        calc_angle(
+                            x2, y2, xc, yc,
+                            0.0, 0.0, arc_tangent_vec.x, arc_tangent_vec.y,
+                            )
+                    }
+                    None => {
+                        calc_angle(x2, y2, xc, yc, xc, yc, x, y)
+                    }
                 }
             }
             (Segment::LineTo { x, y }, Segment::ClosePath) => {
@@ -359,6 +539,27 @@ fn calc_vertex_angle(path: &tree::PathData, idx: usize) -> f64 {
                     px, py, x, y,
                     x, y, nx, ny,
                 )
+            }
+            #[cfg(feature="accurate-arcs")]
+            (Segment::ArcTo {rx, ry, x_axis_rotation, large_arc, sweep, x, y}, Segment::ClosePath) => {
+                let (px, py) = get_prev_vertex(path, idx);
+                let (nx, ny) = get_subpath_start(path, idx);
+
+                match PathData::convert_svg_arc(px, py, rx, ry, x_axis_rotation, large_arc, sweep, x, y) {
+                    Some(arc) => {
+                        let arc_tangent_vec = centerpoint_arc_tangent(arc, 1.0);
+                        calc_angle(
+                            0.0, 0.0, arc_tangent_vec.x, arc_tangent_vec.y,
+                            x, y, nx, ny,
+                        )
+                    }
+                    None => {
+                       calc_angle(
+                            px, py, x, y,
+                            x, y, nx, ny,
+                        )
+                    }
+                }
             }
             (_, Segment::ClosePath) => {
                 let (px, py) = get_prev_vertex(path, idx);
@@ -448,6 +649,9 @@ fn get_prev_vertex(
         Segment::MoveTo { x, y } => (x, y),
         Segment::LineTo { x, y } => (x, y),
         Segment::CurveTo { x, y, .. } => (x, y),
+
+        #[cfg(feature="accurate-arcs")]
+        Segment::ArcTo {x, y, .. } => (x, y),
         Segment::ClosePath => get_subpath_start(segments, idx),
     }
 }

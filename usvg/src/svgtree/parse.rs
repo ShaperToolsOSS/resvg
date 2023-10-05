@@ -748,6 +748,11 @@ fn parse_path(text: &str) -> tree::PathData {
                     prev_x = x;
                     prev_y = y;
                 }
+                #[cfg(feature = "accurate-arcs")]
+                tree::PathSegment::ArcTo { x, y, .. } => {
+                    prev_x = x;
+                    prev_y = y;
+                }
                 tree::PathSegment::ClosePath => {
                     // ClosePath moves us to the last MoveTo coordinate,
                     // not previous.

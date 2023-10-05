@@ -1,0 +1,15 @@
+<svg width="320" height="320" xmlns="http://www.w3.org/2000/svg">
+  <g transform="matrix(1.5 0 0 1.5 -25 -25)"> 
+    <g transform="matrix(0.5 0 0 0.5 50 50)"> 
+      <path d="M 10 315
+       L 110 215
+       A 30 50 0 0 1 162.55 162.45
+       L 172.55 152.45
+       A 30 50 -45 0 1 215.1 109.9
+       L 315 10" stroke="black" fill="green" stroke-width="2" fill-opacity="0.5"/>
+    </g>
+  </g>
+  <g transform="matrix(1 0 0 1 25 25)"> 
+    <path d="M 10 10 V 50 H 50 Z" stroke="black" fill="blue" stroke-width="2"/>
+  </g>
+</svg>
